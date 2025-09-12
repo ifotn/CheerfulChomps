@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CheerfulChomps.Controllers
 {
-    public class CategoriesController : Controller
+    public class ShopController : Controller
     {
         public IActionResult Index()
         {
@@ -19,13 +19,12 @@ namespace CheerfulChomps.Controllers
             return View(categories);
         }
 
-        public IActionResult Create()
+        // GET: /Shop/ByCategory/7
+        public IActionResult ByCategory(int id)
         {
-            return View();
-        }
+            // we will look up the Category by id from the db in Week 4; mock the value for now
+            ViewData["Category"] = "Category " + id.ToString();
 
-        public IActionResult Edit()
-        {
             return View();
         }
     }
