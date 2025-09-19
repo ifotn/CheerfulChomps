@@ -24,7 +24,8 @@ namespace CheerfulChomps.Controllers
             return View();
         }
 
-        public IActionResult Edit()
+        // GET: /Categories/Edit/27 => look up Category based on id param so user can Edit it
+        public IActionResult Edit(int id)
         {
             return View();
         }

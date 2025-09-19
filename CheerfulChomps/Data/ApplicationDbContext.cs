@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using CheerfulChomps.Models;
 
 namespace CheerfulChomps.Data
 {
@@ -9,5 +10,6 @@ namespace CheerfulChomps.Data
             : base(options)
         {
         }
+        public DbSet<CheerfulChomps.Models.Category> Category { get; set; } = default!;
     }
 }
