@@ -26,7 +26,7 @@ namespace CheerfulChomps.Controllers
             //}
 
             // fetch categories from db using DbSet
-            var categories = _context.Category.ToList();
+            var categories = _context.Category.OrderBy(c => c.Name).ToList();
 
             // pass list to view for display
             return View(categories);
@@ -60,7 +60,52 @@ namespace CheerfulChomps.Controllers
         // GET: /Categories/Edit/27 => look up Category based on id param so user can Edit it
         public IActionResult Edit(int id)
         {
-            return View();
+            // try to find selected Category to populate form
+            var category = _context.Category.Find(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            // pass category to view for display
+            return View(category);
+        }
+
+        // POST: /Categories/Edit/27 => update Category and redirect to list
+        [HttpPost]
+        public IActionResult Edit([Bind("CategoryId,Name")] Category category)
+        {
+            // validate
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            // save to db
+            _context.Category.Update(category);
+            _context.SaveChanges();
+
+            // redirect
+            return RedirectToAction("Index");
+        }
+
+        // GET: /Categories/Delete/27 => delete selected Category and refresh list
+        public IActionResult Delete(int id)
+        {
+            var category = _context.Category.Find(id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            // remove from db
+            _context.Category.Remove(category);
+            _context.SaveChanges();
+
+            // redirect
+            return RedirectToAction("Index");
         }
     }
 }
