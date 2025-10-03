@@ -19,6 +19,7 @@ html {
 
 body {
   margin-bottom: 60px;
+  font-family: 'Noto sans', sans-serif;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -28,4 +29,17 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/* override Bootstrap colours with custom theme from teamcolorcodes.com */
+.navbar-dark {
+    background-color: #006BA6;
+}
+
+.btn-primary {
+    background-color: #002F6C;
+}
+
+.btn-danger {
+    background-color: #DA291C;
 }
