@@ -2,6 +2,7 @@
 using CheerfulChomps.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace CheerfulChomps.Controllers
 {
@@ -18,8 +19,11 @@ namespace CheerfulChomps.Controllers
 
         public IActionResult Index()
         {
-            // fetch list of products for display
-            var products = _context.Product.ToList();
+            // fetch list of products for display, joining to parent Category & sorting a-z
+            var products = _context.Product
+                .Include(p => p.Category)
+                .OrderBy(p => p.Name)
+                .ToList();
 
             return View(products);
         }
