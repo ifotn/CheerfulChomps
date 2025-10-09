@@ -43,3 +43,12 @@ body {
 .btn-danger {
     background-color: #DA291C;
 }
+
+table.sortable th:hover {
+    cursor: pointer;
+    color: #006BA6;
+}
+
+.thumb {
+    width: 100px;
+}

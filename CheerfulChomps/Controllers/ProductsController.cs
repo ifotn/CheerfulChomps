@@ -39,7 +39,7 @@ namespace CheerfulChomps.Controllers
 
         // POST: /Products/Create => process form submission to create new Product
         [HttpPost]
-        public IActionResult Create([Bind("Name,Price,Stock,Image,CategoryId")] Product product)
+        public IActionResult Create([Bind("Name,Price,Stock,Image,CategoryId")] Product product, IFormFile? Image)
         {
             // validate
             if (!ModelState.IsValid)
@@ -47,6 +47,13 @@ namespace CheerfulChomps.Controllers
                 // fetch Categories a-z into dropdown list for parent selection on the form
                 ViewBag.CategoryId = new SelectList(_context.Category.OrderBy(c => c.Name).ToList(), "CategoryId", "Name");
                 return View(product);
+            }
+
+            // upload Image if any and set Image property with uniquely generated photo name
+            if (Image != null)
+            {
+                var fileName = UploadPhoto(Image);
+                product.Image = fileName;
             }
 
             // save to db
@@ -78,7 +85,7 @@ namespace CheerfulChomps.Controllers
 
         // POST: /Products/Edit/7 => update selected Product
         [HttpPost]
-        public IActionResult Edit(int id, [Bind("ProductId,Name,Price,Stock,Image,CategoryId")] Product product)
+        public IActionResult Edit(int id, [Bind("ProductId,Name,Price,Stock,Image,CategoryId")] Product product, IFormFile? Image, String? CurrentImage)
         {
             // validate
             if (!ModelState.IsValid)
@@ -86,6 +93,18 @@ namespace CheerfulChomps.Controllers
                 // fetch Categories a-z into dropdown list for parent selection on the form
                 ViewBag.CategoryId = new SelectList(_context.Category.OrderBy(c => c.Name).ToList(), "CategoryId", "Name");
                 return View(product);
+            }
+
+            // upload Image if any and set Image property with uniquely generated photo name
+            if (Image != null)
+            {
+                var fileName = UploadPhoto(Image);
+                product.Image = fileName;
+            }
+            else
+            {
+                // keep current Image name if there is one
+                product.Image = CurrentImage;
             }
 
             // save to db
@@ -112,6 +131,29 @@ namespace CheerfulChomps.Controllers
             _context.Product.Remove(product);
             _context.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        // file upload method called from both Create and Edit
+        private static string UploadPhoto(IFormFile file)
+        {
+            // get temp location of uploaded file
+            var filePath = Path.GetTempFileName();
+
+            // use Globally Unique Identifier (GUID) to create unique name & prevent overwriting
+            // food.jpg => sa89732jriusdafkj-89sdf7sa8df-food.jpg
+            var fileName = Guid.NewGuid().ToString() + "-" + file.FileName;
+
+            // get dynamic file path to target directory so it works on any server
+            var uploadPath = System.IO.Directory.GetCurrentDirectory() + "\\wwwroot\\img\\products\\" + fileName;
+
+            // execute the file copy
+            using (var stream = new FileStream(uploadPath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+
+            // return unique file name to save as part of Product record
+            return fileName;
         }
     }
 }
