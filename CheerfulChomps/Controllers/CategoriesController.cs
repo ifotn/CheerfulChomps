@@ -1,9 +1,12 @@
 ﻿using CheerfulChomps.Data;
 using CheerfulChomps.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CheerfulChomps.Controllers
 {
+    //[Authorize] // authentication check: block anonymous users
+    [Authorize(Roles = "Administrator")]
     public class CategoriesController : Controller
     {
         // shared db connection obj
