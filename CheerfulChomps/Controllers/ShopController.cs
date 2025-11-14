@@ -129,5 +129,17 @@ namespace CheerfulChomps.Controllers
 
             return View(cartItems);
         }
+
+        // GET: /Shop/RemoveFromCart/34 => this is obvious no?
+        public IActionResult RemoveFromCart(int id)
+        {
+            // delete from cart
+            var cartItem = _context.CartItem.Find(id);
+            _context.CartItem.Remove(cartItem);
+            _context.SaveChanges();
+
+            // refresh cart
+            return RedirectToAction("Cart");
+        }
     }
 }

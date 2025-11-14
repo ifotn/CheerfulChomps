@@ -39,7 +39,7 @@
                     </td>
 
                     <td>
-                        <a asp-action="Delete" asp-route-id="@item.CartItemId">Delete</a>
+                        <a asp-action="RemoveFromCart" asp-route-id="@item.CartItemId">Remove</a>
                     </td>
                 </tr>
             }
@@ -57,6 +57,7 @@
                 <td>
                     <h3>@string.Format("{0:c}", total)</h3>
                 </td>
+                <td></td>
             </tr>
         </tbody>
     </table>

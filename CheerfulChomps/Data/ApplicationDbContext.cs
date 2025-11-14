@@ -13,5 +13,7 @@ namespace CheerfulChomps.Data
         public DbSet<CheerfulChomps.Models.Category> Category { get; set; } = default!;
         public DbSet<CheerfulChomps.Models.Product> Product { get; set; } = default!;
         public DbSet<CartItem> CartItem { get; set; }  
+        public DbSet<Order> Order { get; set; }
+        public DbSet<OrderDetail> OrderDetail { get; set; }
     }
 }
