@@ -5,11 +5,13 @@
 }
 <h1>Shop for the best in British Food!</h1>
 
-<ul>
+<ul class="row">
     @foreach (var category in Model)
     {
-        <li>
-            <a asp-action="ByCategory" asp-route-id="@category.CategoryId">@category.Name</a>
+        <li class="card col-lg-4 text-center h-100 m-1">
+            <a asp-action="ByCategory" asp-route-id="@category.CategoryId" class="card-body">
+                <h2>@category.Name</h2>
+            </a>
         </li>
     }
 </ul>
