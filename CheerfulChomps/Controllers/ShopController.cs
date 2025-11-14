@@ -1,6 +1,8 @@
 ﻿using CheerfulChomps.Data;
 using CheerfulChomps.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.AccessControl;
 
 namespace CheerfulChomps.Controllers
 {
@@ -60,27 +62,72 @@ namespace CheerfulChomps.Controllers
         public IActionResult AddToCart(int Quantity, int ProductId)
         {
             // identify customer
-            var customerId = "Test Customer";
+            var customerId = GetCustomerId();
 
             // look up product price
             decimal price = 0;
             var product = _context.Product.Find(ProductId);
             price = product.Price;
 
-            // add item to user's cart
-            var cartItem = new CartItem
-            {
-                Quantity = Quantity,
-                ProductId = ProductId,
-                CustomerId = customerId,
-                Price = price
-            };
+            // is this product already in this user's cart?
+            var cartItem = _context.CartItem
+                .Where(c => c.CustomerId == customerId && c.ProductId == ProductId)
+                .SingleOrDefault(); // only fetch 1 record
 
-            _context.CartItem.Add(cartItem);
+            // customer doesn't already have this product in their cart => ADD
+            if (cartItem == null)
+            {
+                // add item to user's cart
+                var newCartItem = new CartItem
+                {
+                    Quantity = Quantity,
+                    ProductId = ProductId,
+                    CustomerId = customerId,
+                    Price = price
+                };
+
+                _context.CartItem.Add(newCartItem);
+            }
+            else
+            {
+                cartItem.Quantity += Quantity;  // update quantity 
+                _context.CartItem.Update(cartItem);
+            }
+
             _context.SaveChanges();
 
             // redirect to cart page
             return RedirectToAction("Cart");
+        }
+
+        private string GetCustomerId()
+        {
+            // check for CustomerId session var
+            if (HttpContext.Session.GetString("CustomerId") == null)
+            {
+                // if no CustomerId session var, create one using a GUID
+                HttpContext.Session.SetString("CustomerId", Guid.NewGuid().ToString());
+            }
+
+            // return CustomerId session var
+            return HttpContext.Session.GetString("CustomerId");
+        }
+
+        // GET: /Shop/Cart => show current user's cart
+        public IActionResult Cart()
+        {
+            // fetch items from user's cart in db
+            var cartItems = _context.CartItem
+                .Include(c => c.Product) // join to parent to include Product Name in page view
+                .Where(c => c.CustomerId == GetCustomerId())
+                .ToList();
+
+            // calc item total for navbar badge using Session var
+            var itemCount = (from c in cartItems
+                             select c.Quantity).Sum();
+            HttpContext.Session.SetInt32("ItemCount", itemCount);
+
+            return View(cartItems);
         }
     }
 }

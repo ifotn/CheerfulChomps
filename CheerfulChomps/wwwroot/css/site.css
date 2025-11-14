@@ -40,7 +40,7 @@ body {
     background-color: #002F6C;
 }
 
-.btn-danger {
+.btn-danger, .badge-secondary {
     background-color: #DA291C;
 }
 
