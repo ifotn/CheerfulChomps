@@ -219,5 +219,39 @@ namespace CheerfulChomps.Controllers
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303); 
         }
+
+        // GET: /Shop/SaveOrder => save order & details, empty cart, show confirmation
+        [Authorize]
+        public IActionResult SaveOrder()
+        {
+            // create order from session var
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            _context.Order.Add(order);
+            _context.SaveChanges();
+
+            // move cart items to order details then empty cart
+            var cartItems = _context.CartItem.Where(c => c.CustomerId == GetCustomerId());
+            foreach (var item in cartItems)
+            {
+                // create new Order Detail
+                var orderDetail = new OrderDetail
+                {
+                    Quantity = item.Quantity,
+                    ProductId = item.ProductId,
+                    Price = item.Price,
+                    OrderId = order.OrderId
+                };
+
+                _context.OrderDetail.Add(orderDetail);
+                _context.CartItem.Remove(item);
+            }
+            _context.SaveChanges();
+
+            // clear session vars (all 4)
+            HttpContext.Session.Clear();
+
+            // redirect to order confirmation => /Orders/Details/123
+            return RedirectToAction("Orders", "Details", new { @id = order.OrderId });
+        }
     }
 }
