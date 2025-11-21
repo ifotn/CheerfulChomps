@@ -1,6 +1,8 @@
 ﻿using CheerfulChomps.Data;
 using CheerfulChomps.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
 using System.Security.AccessControl;
 
@@ -140,6 +142,33 @@ namespace CheerfulChomps.Controllers
 
             // refresh cart
             return RedirectToAction("Cart");
+        }
+
+        // GET: /Shop/Checkout => show empty Checkout form to get Customer info
+        // Customer must log in here to continue
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            return View();
+        }
+
+        // POST: /Shop/Checkout => save order info to Session var. We'll save to db after payment.
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode,Phone")] Order order)
+        {
+            // auto-fill date, total, email
+            order.OrderDate = DateTime.Now;
+            order.CustomerId = User.Identity.Name;
+            order.OrderTotal = (from c in _context.CartItem
+                                where c.CustomerId == GetCustomerId()
+                                select c.Quantity * c.Price).Sum();
+
+            // save order to Session var so we can save to db after payment
+            HttpContext.Session.SetObject("Order", order);
+
+            return RedirectToAction("Payment");
         }
     }
 }
