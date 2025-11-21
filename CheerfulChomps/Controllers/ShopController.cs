@@ -251,7 +251,7 @@ namespace CheerfulChomps.Controllers
             HttpContext.Session.Clear();
 
             // redirect to order confirmation => /Orders/Details/123
-            return RedirectToAction("Orders", "Details", new { @id = order.OrderId });
+            return RedirectToAction("Details", "Orders",  new { @id = order.OrderId });
         }
     }
 }
