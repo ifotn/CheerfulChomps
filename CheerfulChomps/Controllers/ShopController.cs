@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
+using Stripe.Checkout;
+using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 
 namespace CheerfulChomps.Controllers
@@ -13,10 +16,14 @@ namespace CheerfulChomps.Controllers
         // shared db conn
         private readonly ApplicationDbContext _context;
 
-        // enable db dependency for this controller
-        public ShopController(ApplicationDbContext context)
+        // config object to read vars from appsettings
+        private IConfiguration _configuration;
+
+        // enable db & configuration dependencies for this controller
+        public ShopController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public IActionResult Index()
@@ -167,8 +174,50 @@ namespace CheerfulChomps.Controllers
 
             // save order to Session var so we can save to db after payment
             HttpContext.Session.SetObject("Order", order);
+            HttpContext.Session.SetInt32("OrderTotal", (int)(order.OrderTotal * 100));
 
             return RedirectToAction("Payment");
+        }
+
+        // GET: /Shop/Payment => invoke Stripe Payment page
+        [Authorize]
+        public IActionResult Payment()
+        {
+            // get stripe key from config.  This requires an IConfiguration dependency to read appsettings
+            StripeConfiguration.ApiKey = _configuration["StripeSecretKey"];
+
+            // set up payment options for Stripe checkout session
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            Currency = "cad",
+                            UnitAmount = HttpContext.Session.GetInt32("OrderTotal"),
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = "Cheerful Chomps Purchase"
+                            }
+                        },
+                        Quantity = 1
+                    }                   
+                },
+                Mode = "payment",
+                PaymentMethodTypes = new List<string> { "card" },
+                SuccessUrl = "https://" + Request.Host + "/Shop/SaveOrder",
+                CancelUrl = "https://" + Request.Host + "/Shop/Cart"
+            };
+
+            // NOW invoke Stripe
+            var service = new SessionService();
+            Session session = service.Create(options);
+
+            // after done at stripe, redirect to either Success or Cancel Url (303)
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303); 
         }
     }
 }
