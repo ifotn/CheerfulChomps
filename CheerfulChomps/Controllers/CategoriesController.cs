@@ -32,7 +32,7 @@ namespace CheerfulChomps.Controllers
             var categories = _context.Category.OrderBy(c => c.Name).ToList();
 
             // pass list to view for display
-            return View(categories);
+            return View("Index", categories);
         }
 
         // GET: /Categories/Create => show empty Category form
@@ -68,11 +68,11 @@ namespace CheerfulChomps.Controllers
 
             if (category == null)
             {
-                return NotFound();
+                return View("404");
             }
 
-            // pass category to view for display
-            return View(category);
+            // pass category to view for display.  specify view name for clarity
+            return View("Edit", category);
         }
 
         // POST: /Categories/Edit/27 => update Category and redirect to list
